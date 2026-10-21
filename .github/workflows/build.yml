@@ -9,14 +9,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
+      - name: Fix layout (luzne pliki -> wlasciwe foldery)
+        run: |
+          shopt -s nullglob
+          mkdir -p src/main/java/pl/darkhud src/main/resources gradle/wrapper
+          for f in *.java; do
+            mv -f "$f" src/main/java/pl/darkhud/
+          done
+          if [ -f fabric.mod.json ]; then mv -f fabric.mod.json src/main/resources/; fi
+          if [ -f gradle-wrapper.jar ]; then mv -f gradle-wrapper.jar gradle/wrapper/; fi
+          if [ -f gradle-wrapper.properties ]; then mv -f gradle-wrapper.properties gradle/wrapper/; fi
+          echo "--- pliki zrodlowe ---"
+          ls -la src/main/java/pl/darkhud
+
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew build
+          ./gradlew build -Pmod_version=1.1.0
+
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
